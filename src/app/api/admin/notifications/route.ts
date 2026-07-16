@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 
 type RoleFilter = "CUSTOMER" | "DRIVER" | "EMPLOYEE" | "ADMIN";
 type EventType = "PAYMENT" | "PICKUP" | "DELIVERY" | "ORDER" | "REFUND" | "GENERAL";
+type NotificationWhereInput = NonNullable<
+  NonNullable<Parameters<typeof prisma.notification.findMany>[0]>["where"]
+>;
 
 function classifyEventType(title: string, body: string): EventType {
   const text = `${title} ${body}`.toLowerCase();
@@ -33,8 +35,8 @@ function parseDate(value: string | null): Date | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
-function eventTypeWhere(eventType: EventType | "all" | null): Prisma.NotificationWhereInput {
-  const payment: Prisma.NotificationWhereInput = {
+function eventTypeWhere(eventType: EventType | "all" | null): NotificationWhereInput {
+  const payment: NotificationWhereInput = {
     OR: [
       { title: { contains: "payment", mode: "insensitive" } },
       { body: { contains: "payment", mode: "insensitive" } },
@@ -43,27 +45,27 @@ function eventTypeWhere(eventType: EventType | "all" | null): Prisma.Notificatio
       { body: { contains: "card", mode: "insensitive" } }
     ]
   };
-  const pickup: Prisma.NotificationWhereInput = {
+  const pickup: NotificationWhereInput = {
     OR: [
       { title: { contains: "pickup", mode: "insensitive" } },
       { body: { contains: "pickup", mode: "insensitive" } },
       { body: { contains: "collect", mode: "insensitive" } }
     ]
   };
-  const delivery: Prisma.NotificationWhereInput = {
+  const delivery: NotificationWhereInput = {
     OR: [
       { title: { contains: "delivery", mode: "insensitive" } },
       { body: { contains: "delivery", mode: "insensitive" } },
       { body: { contains: "delivered", mode: "insensitive" } }
     ]
   };
-  const refund: Prisma.NotificationWhereInput = {
+  const refund: NotificationWhereInput = {
     OR: [
       { title: { contains: "refund", mode: "insensitive" } },
       { body: { contains: "refund", mode: "insensitive" } }
     ]
   };
-  const order: Prisma.NotificationWhereInput = {
+  const order: NotificationWhereInput = {
     OR: [
       { title: { contains: "order", mode: "insensitive" } },
       { body: { contains: "order", mode: "insensitive" } }
@@ -97,7 +99,7 @@ export async function GET(req: NextRequest) {
   const startDate = parseDate(searchParams.get("startDate"));
   const endDate = parseDate(searchParams.get("endDate"));
 
-  const where: Prisma.NotificationWhereInput = {
+  const where: NotificationWhereInput = {
     ...(typeof read === "boolean" ? { read } : {}),
     ...(role && role !== "all" ? { user: { role } } : {}),
     ...(startDate || endDate

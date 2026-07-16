@@ -106,18 +106,20 @@ export async function POST(req: NextRequest) {
     select: { id: true, role: true, phone: true }
   });
 
+  type StaffRow = Awaited<ReturnType<typeof prisma.user.findMany>>[number];
+
   if (staff.length > 0) {
     await prisma.notification.createMany({
-      data: staff.map((user) => ({
+      data: staff.map((user: StaffRow) => ({
         userId: user.id,
         title: user.role === "DRIVER" ? "New pickup pending" : "Upcoming order",
         body: user.role === "DRIVER" ? driverMessage : employeeMessage
       }))
     });
 
-    const driverTargets = staff.filter((user) => user.role === "DRIVER");
+    const driverTargets = staff.filter((user: StaffRow) => user.role === "DRIVER");
     await Promise.all(
-      driverTargets.map((driver) =>
+      driverTargets.map((driver: StaffRow) =>
         pushDriverAlerts({
           phone: driver.phone,
           title: "New pickup pending",

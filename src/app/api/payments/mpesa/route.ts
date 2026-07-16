@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const result = await stkPush(phone, amount, orderId);
     return NextResponse.json(result);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Mpesa request failed" }, { status: 500 });
   }
 }

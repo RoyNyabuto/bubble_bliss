@@ -84,7 +84,7 @@ const stageBackgrounds: Record<
   },
   CLEANING: {
     image:
-      "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1800&q=80",
+      "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=1800&q=80",
     glowA: "rgba(14, 165, 233, 0.25)",
     glowB: "rgba(168, 85, 247, 0.2)"
   },

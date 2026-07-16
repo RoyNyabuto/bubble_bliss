@@ -72,7 +72,7 @@ export default async function HomePage() {
             {reviews.map((review) => (
               <div key={review.id} className="glass rounded-2xl p-5">
                 <p className="text-primary mb-2">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
-                <p className="text-white/80 text-sm mb-3">"{review.comment}"</p>
+                <p className="text-white/80 text-sm mb-3">{`"${review.comment}"`}</p>
                 <p className="text-white/50 text-xs">{review.user.name} - {review.order.orderNumber}</p>
               </div>
             ))}

@@ -79,7 +79,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       reference = `CASH-${Date.now()}`;
       paymentNote = "Cash payment recorded";
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Payment request failed. Please try again." }, { status: 500 });
   }
 

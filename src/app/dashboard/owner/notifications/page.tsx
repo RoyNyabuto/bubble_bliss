@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type RoleFilter = "all" | "CUSTOMER" | "DRIVER" | "EMPLOYEE" | "ADMIN";
@@ -80,7 +80,7 @@ export default function OwnerNotificationsPage() {
   const [busyBulk, setBusyBulk] = useState<"read" | "unread" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function loadNotifications() {
+  const loadNotifications = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -115,11 +115,11 @@ export default function OwnerNotificationsPage() {
         totalPages: 1
       }
     );
-  }
+  }, [role, eventType, readState, startDate, endDate, page, pageSize]);
 
   useEffect(() => {
     void loadNotifications();
-  }, [role, eventType, readState, startDate, endDate, page, pageSize]);
+  }, [loadNotifications]);
 
   useEffect(() => {
     setPage(1);

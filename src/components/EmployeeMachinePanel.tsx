@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Float, OrbitControls, RoundedBox } from "@react-three/drei";
+import type { Mesh } from "three";
 
 type Machine = {
   id: string;
@@ -25,7 +26,7 @@ type Props = {
 };
 
 function SpinningDrum({ active }: { active: boolean }) {
-  const drumRef = useRef<{ rotation: { z: number } } | null>(null);
+  const drumRef = useRef<Mesh | null>(null);
 
   useFrame((_, delta) => {
     if (!drumRef.current) return;
@@ -186,6 +187,8 @@ export default function EmployeeMachinePanel({ initialMachines, orders }: Props)
   const [machines, setMachines] = useState(initialMachines);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [dragOverMachineId, setDragOverMachineId] = useState<string | null>(null);
+  const [highlightedMachineId, setHighlightedMachineId] = useState<string | null>(null);
+  const [highlightedOrderId, setHighlightedOrderId] = useState<string | null>(null);
   const [washingOutMachineId, setWashingOutMachineId] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<Record<string, ProcessingOrder | null>>(() => {
     const seeded: Record<string, ProcessingOrder | null> = {};
@@ -310,12 +313,18 @@ export default function EmployeeMachinePanel({ initialMachines, orders }: Props)
                     setError("Only CLEANING orders can be dragged into a machine.");
                     return;
                   }
+                  setHighlightedOrderId(order.id);
                   event.dataTransfer.setData("text/order-id", order.id);
                   event.dataTransfer.effectAllowed = "move";
                 }}
+                onClick={() => setHighlightedOrderId(order.id)}
                 className={`rounded-xl border px-3 py-2 text-xs ${
                   order.status === "CLEANING"
-                    ? "cursor-grab active:cursor-grabbing border-white/20 bg-white/5"
+                    ? `cursor-grab active:cursor-grabbing border-white/20 bg-white/5 transition-all duration-150 active:scale-[0.98] ${
+                        highlightedOrderId === order.id
+                          ? "ring-2 ring-primary/70 border-primary/60 bg-primary/10"
+                          : ""
+                      }`
                     : "cursor-not-allowed border-white/10 bg-white/0 text-white/50"
                 }`}
               >
@@ -340,6 +349,7 @@ export default function EmployeeMachinePanel({ initialMachines, orders }: Props)
           {machines.map((machine) => (
             <div
               key={machine.id}
+              onClick={() => setHighlightedMachineId(machine.id)}
               onDragOver={(event) => {
                 event.preventDefault();
                 event.dataTransfer.dropEffect = "move";
@@ -349,12 +359,17 @@ export default function EmployeeMachinePanel({ initialMachines, orders }: Props)
               onDrop={(event) => {
                 event.preventDefault();
                 setDragOverMachineId(null);
+                setHighlightedMachineId(machine.id);
                 const orderId = event.dataTransfer.getData("text/order-id");
                 if (orderId) {
                   void assignOrderToMachine(machine.id, orderId);
                 }
               }}
-              className={dragOverMachineId === machine.id ? "ring-2 ring-primary/70 rounded-lg" : ""}
+              className={`rounded-lg transition-all duration-150 ${
+                dragOverMachineId === machine.id || highlightedMachineId === machine.id
+                  ? "ring-2 ring-primary/70"
+                  : ""
+              }`}
             >
               <div className="relative h-56">
                 <Machine3D status={machine.status} type={machine.type} />
@@ -381,7 +396,7 @@ export default function EmployeeMachinePanel({ initialMachines, orders }: Props)
                     type="button"
                     onClick={() => void markLaundryOut(machine.id)}
                     disabled={washingOutMachineId === machine.id || busyId === machine.id}
-                    className="bg-emerald-500/85 text-black px-3 py-1 rounded-full text-xs font-medium disabled:opacity-50"
+                    className="bg-emerald-500/85 text-black px-3 py-1 rounded-full text-xs font-medium transition-all duration-150 hover:brightness-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/80 disabled:opacity-50"
                   >
                     {washingOutMachineId === machine.id ? "Updating..." : "Laundry Out - Washed"}
                   </button>

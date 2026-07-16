@@ -138,7 +138,7 @@ const sections: LaundrySection[] = [
         name: "Suit ironing",
         price: 150,
         image:
-          "https://images.unsplash.com/photo-1593032465171-8bd2f73f070d?auto=format&fit=crop&w=1200&q=80"
+          "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&w=1200&q=80"
       }
     ]
   }

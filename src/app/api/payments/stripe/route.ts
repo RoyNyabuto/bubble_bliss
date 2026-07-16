@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   try {
     const intent = await createPaymentIntent(amount, orderId);
     return NextResponse.json({ clientSecret: intent.client_secret });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Stripe request failed" }, { status: 500 });
   }
 }

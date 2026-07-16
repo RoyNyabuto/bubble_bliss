@@ -27,6 +27,12 @@ export async function GET() {
   });
 
   type AddressRow = Awaited<ReturnType<typeof prisma.address.findMany>>[number];
+  type SavedAddress = {
+    id: string;
+    label: string;
+    value: string;
+    isDefault: boolean;
+  };
 
   const selectedAddress = addresses.find((item: AddressRow) => item.isDefault) ?? addresses[0] ?? null;
   const address = selectedAddress
@@ -34,13 +40,13 @@ export async function GET() {
     : null;
 
   const savedAddresses = addresses
-    .map((item: AddressRow) => ({
+    .map((item: AddressRow): SavedAddress => ({
       id: item.id,
       label: item.label,
       value: [item.line1, item.city].filter(Boolean).join(", "),
       isDefault: item.isDefault
     }))
-    .filter((item) => item.value.length > 0);
+    .filter((item: SavedAddress) => item.value.length > 0);
 
   return NextResponse.json({
     name: user.name,

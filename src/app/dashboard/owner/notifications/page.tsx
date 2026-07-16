@@ -30,22 +30,51 @@ type PaginationState = {
   totalPages: number;
 };
 
+const roleOptions: RoleFilter[] = ["all", "CUSTOMER", "DRIVER", "EMPLOYEE", "ADMIN"];
+const eventOptions: EventFilter[] = ["all", "PAYMENT", "PICKUP", "DELIVERY", "ORDER", "REFUND", "GENERAL"];
+const readOptions: ReadFilter[] = ["all", "read", "unread"];
+
+function pickEnum<T extends string>(value: string | null, options: readonly T[], fallback: T): T {
+  if (!value) return fallback;
+  return options.includes(value as T) ? (value as T) : fallback;
+}
+
+function pickNumber(value: string | null, fallback: number, min: number, max: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
 export default function OwnerNotificationsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const roleFromQuery = pickEnum(searchParams.get("role"), roleOptions, "all");
+  const eventFromQuery = pickEnum(searchParams.get("eventType"), eventOptions, "all");
+  const readFromQuery = pickEnum(searchParams.get("read"), readOptions, "all");
+  const startFromQuery = searchParams.get("startDate") ?? "";
+  const endFromQuery = searchParams.get("endDate") ?? "";
+  const searchFromQuery = searchParams.get("q") ?? "";
+  const pageFromQuery = pickNumber(searchParams.get("page"), 1, 1, 100000);
+  const pageSizeFromQuery = pickNumber(searchParams.get("pageSize"), 20, 10, 100);
+
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
-    page: 1,
-    pageSize: 20,
+    page: pageFromQuery,
+    pageSize: pageSizeFromQuery,
     total: 0,
     totalPages: 1
   });
-  const [role, setRole] = useState<RoleFilter>("all");
-  const [eventType, setEventType] = useState<EventFilter>("all");
-  const [readState, setReadState] = useState<ReadFilter>("all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [search, setSearch] = useState("");
+  const [role, setRole] = useState<RoleFilter>(roleFromQuery);
+  const [eventType, setEventType] = useState<EventFilter>(eventFromQuery);
+  const [readState, setReadState] = useState<ReadFilter>(readFromQuery);
+  const [startDate, setStartDate] = useState(startFromQuery);
+  const [endDate, setEndDate] = useState(endFromQuery);
+  const [page, setPage] = useState(pageFromQuery);
+  const [pageSize, setPageSize] = useState(pageSizeFromQuery);
+  const [search, setSearch] = useState(searchFromQuery);
+  const [pageInput, setPageInput] = useState(String(pageFromQuery));
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [busyBulk, setBusyBulk] = useState<"read" | "unread" | null>(null);
@@ -76,59 +105,22 @@ export default function OwnerNotificationsPage() {
       return;
     }
 
-    const roleOptions: RoleFilter[] = ["all", "CUSTOMER", "DRIVER", "EMPLOYEE", "ADMIN"];
-    const eventOptions: EventFilter[] = [
-      "all",
-      "PAYMENT",
-      "PICKUP",
-      "DELIVERY",
-      "ORDER",
-      "REFUND",
-      "GENERAL"
-    ];
-    const readOptions: ReadFilter[] = ["all", "read", "unread"];
-
-    function pickEnum<T extends string>(value: string | null, options: readonly T[], fallback: T): T {
-      if (!value) return fallback;
-      return options.includes(value as T) ? (value as T) : fallback;
-    }
-
-    function pickNumber(value: string | null, fallback: number, min: number, max: number): number {
-      const parsed = Number(value);
-      if (!Number.isFinite(parsed)) return fallback;
-      return Math.min(Math.max(parsed, min), max);
-    }
-
     const payload = await res.json();
-      const router = useRouter();
-      const pathname = usePathname();
-      const searchParams = useSearchParams();
-
-      const roleFromQuery = pickEnum(searchParams.get("role"), roleOptions, "all");
-      const eventFromQuery = pickEnum(searchParams.get("eventType"), eventOptions, "all");
-      const readFromQuery = pickEnum(searchParams.get("read"), readOptions, "all");
-      const startFromQuery = searchParams.get("startDate") ?? "";
-      const endFromQuery = searchParams.get("endDate") ?? "";
-      const searchFromQuery = searchParams.get("q") ?? "";
-      const pageFromQuery = pickNumber(searchParams.get("page"), 1, 1, 100000);
-      const pageSizeFromQuery = pickNumber(searchParams.get("pageSize"), 20, 10, 100);
-
     setNotifications(payload.items ?? []);
     setPagination(
-        page: pageFromQuery,
-        pageSize: pageSizeFromQuery,
+      payload.pagination ?? {
+        page,
         pageSize,
         total: payload.items?.length ?? 0,
         totalPages: 1
-      const [role, setRole] = useState<RoleFilter>(roleFromQuery);
-      const [eventType, setEventType] = useState<EventFilter>(eventFromQuery);
-      const [readState, setReadState] = useState<ReadFilter>(readFromQuery);
-      const [startDate, setStartDate] = useState(startFromQuery);
-      const [endDate, setEndDate] = useState(endFromQuery);
-      const [page, setPage] = useState(pageFromQuery);
-      const [pageSize, setPageSize] = useState(pageSizeFromQuery);
-      const [search, setSearch] = useState(searchFromQuery);
-      const [pageInput, setPageInput] = useState(String(pageFromQuery));
+      }
+    );
+  }
+
+  useEffect(() => {
+    void loadNotifications();
+  }, [role, eventType, readState, startDate, endDate, page, pageSize]);
+
   useEffect(() => {
     setPage(1);
   }, [role, eventType, readState, startDate, endDate, pageSize]);
@@ -392,11 +384,7 @@ export default function OwnerNotificationsPage() {
                     disabled={busyId === notification.id}
                     className="bg-white/10 px-3 py-1 rounded-full text-xs disabled:opacity-50"
                   >
-                    {busyId === notification.id
-                      ? "Saving..."
-                      : notification.read
-                      ? "Mark unread"
-                      : "Mark read"}
+                    {busyId === notification.id ? "Saving..." : notification.read ? "Mark unread" : "Mark read"}
                   </button>
                 </div>
               </div>

@@ -132,7 +132,9 @@ export async function GET(req: NextRequest) {
     take: pageSize
   });
 
-  const items = notifications.map((notification) => ({
+  type NotificationRow = Awaited<ReturnType<typeof prisma.notification.findMany>>[number];
+
+  const items = notifications.map((notification: NotificationRow) => ({
     id: notification.id,
     title: notification.title,
     body: notification.body,

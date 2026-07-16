@@ -35,8 +35,10 @@ export async function GET() {
     }
   });
 
+  type OrderRow = Awaited<ReturnType<typeof prisma.order.findMany>>[number];
+
   return NextResponse.json(
-    orders.map((order) => ({
+    orders.map((order: OrderRow) => ({
       ...order,
       total: Number(order.total),
       payment: order.payment

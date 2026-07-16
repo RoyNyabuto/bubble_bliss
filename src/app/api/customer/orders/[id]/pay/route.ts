@@ -126,9 +126,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     select: { id: true }
   });
 
+  type AdminRow = Awaited<ReturnType<typeof prisma.user.findMany>>[number];
+
   if (admins.length > 0) {
     await prisma.notification.createMany({
-      data: admins.map((admin) => ({
+      data: admins.map((admin: AdminRow) => ({
         userId: admin.id,
         title: "Customer payment received",
         body: `${order.orderNumber} paid via ${method}. Amount: KSh ${amount}.`

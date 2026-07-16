@@ -26,13 +26,15 @@ export async function GET() {
     select: { id: true, label: true, line1: true, city: true, isDefault: true }
   });
 
-  const selectedAddress = addresses.find((item) => item.isDefault) ?? addresses[0] ?? null;
+  type AddressRow = Awaited<ReturnType<typeof prisma.address.findMany>>[number];
+
+  const selectedAddress = addresses.find((item: AddressRow) => item.isDefault) ?? addresses[0] ?? null;
   const address = selectedAddress
     ? [selectedAddress.line1, selectedAddress.city].filter(Boolean).join(", ")
     : null;
 
   const savedAddresses = addresses
-    .map((item) => ({
+    .map((item: AddressRow) => ({
       id: item.id,
       label: item.label,
       value: [item.line1, item.city].filter(Boolean).join(", "),

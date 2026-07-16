@@ -127,11 +127,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           select: { id: true, phone: true }
         });
 
+    type DriverRow = Awaited<ReturnType<typeof prisma.user.findMany>>[number];
+
     const driverBody = `${order.orderNumber} is packed and ready for pickup to return to customer.`;
 
     if (drivers.length > 0) {
       await prisma.notification.createMany({
-        data: drivers.map((driver) => ({
+        data: drivers.map((driver: DriverRow) => ({
           userId: driver.id,
           title: "Order ready for return delivery",
           body: driverBody
@@ -139,7 +141,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       });
 
       await Promise.all(
-        drivers.map((driver) =>
+        drivers.map((driver: DriverRow) =>
           pushDriverAlerts({
             phone: driver.phone,
             title: "Order ready for return delivery",

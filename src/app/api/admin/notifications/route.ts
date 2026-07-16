@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 
 type RoleFilter = "CUSTOMER" | "DRIVER" | "EMPLOYEE" | "ADMIN";
 type EventType = "PAYMENT" | "PICKUP" | "DELIVERY" | "ORDER" | "REFUND" | "GENERAL";
+type NotificationCountArgs = NonNullable<Parameters<typeof prisma.notification.count>[0]>;
+type NotificationWhere = NotificationCountArgs["where"];
 
 function classifyEventType(title: string, body: string): EventType {
   const text = `${title} ${body}`.toLowerCase();
@@ -32,40 +34,40 @@ function parseDate(value: string | null): Date | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
-function eventTypeWhere(eventType: EventType | "all" | null) {
+function eventTypeWhere(eventType: EventType | "all" | null): Record<string, unknown> {
   const payment = {
     OR: [
-      { title: { contains: "payment", mode: "insensitive" } },
-      { body: { contains: "payment", mode: "insensitive" } },
-      { body: { contains: "paid", mode: "insensitive" } },
-      { body: { contains: "mpesa", mode: "insensitive" } },
-      { body: { contains: "card", mode: "insensitive" } }
+      { title: { contains: "payment", mode: "insensitive" as const } },
+      { body: { contains: "payment", mode: "insensitive" as const } },
+      { body: { contains: "paid", mode: "insensitive" as const } },
+      { body: { contains: "mpesa", mode: "insensitive" as const } },
+      { body: { contains: "card", mode: "insensitive" as const } }
     ]
   };
   const pickup = {
     OR: [
-      { title: { contains: "pickup", mode: "insensitive" } },
-      { body: { contains: "pickup", mode: "insensitive" } },
-      { body: { contains: "collect", mode: "insensitive" } }
+      { title: { contains: "pickup", mode: "insensitive" as const } },
+      { body: { contains: "pickup", mode: "insensitive" as const } },
+      { body: { contains: "collect", mode: "insensitive" as const } }
     ]
   };
   const delivery = {
     OR: [
-      { title: { contains: "delivery", mode: "insensitive" } },
-      { body: { contains: "delivery", mode: "insensitive" } },
-      { body: { contains: "delivered", mode: "insensitive" } }
+      { title: { contains: "delivery", mode: "insensitive" as const } },
+      { body: { contains: "delivery", mode: "insensitive" as const } },
+      { body: { contains: "delivered", mode: "insensitive" as const } }
     ]
   };
   const refund = {
     OR: [
-      { title: { contains: "refund", mode: "insensitive" } },
-      { body: { contains: "refund", mode: "insensitive" } }
+      { title: { contains: "refund", mode: "insensitive" as const } },
+      { body: { contains: "refund", mode: "insensitive" as const } }
     ]
   };
   const order = {
     OR: [
-      { title: { contains: "order", mode: "insensitive" } },
-      { body: { contains: "order", mode: "insensitive" } }
+      { title: { contains: "order", mode: "insensitive" as const } },
+      { body: { contains: "order", mode: "insensitive" as const } }
     ]
   };
 
@@ -128,7 +130,7 @@ export async function GET(req: NextRequest) {
       }
     },
     orderBy: { createdAt: "desc" },
-    skip,
+  } as unknown as NotificationWhere;
     take: pageSize
   });
 

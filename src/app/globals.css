@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #3ACF5A;
+  --secondary: #6C63FF;
+  --accent: #FF7EDB;
+}
+
+body {
+  background: #0B0B0B;
+  color: #ffffff;
+}
+
+select,
+select option,
+select optgroup {
+  color: #ffffff;
+  background-color: #0f172a;
+}
+
+select:focus {
+  outline: 1px solid rgba(58, 207, 90, 0.8);
+  outline-offset: 1px;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

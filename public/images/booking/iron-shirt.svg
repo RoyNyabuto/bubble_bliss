@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Shirt ironing">
+  <rect width="320" height="220" fill="#111827"/>
+  <path d="M44 152l38-70h128l66 70H44z" fill="#9ca3af"/>
+  <path d="M110 96h66c28 0 52 20 52 45v11H76l34-56z" fill="#e5e7eb"/>
+  <circle cx="204" cy="123" r="5" fill="#111827"/>
+  <text x="160" y="202" fill="#f3f4f6" font-size="16" text-anchor="middle" font-family="Arial, sans-serif">Shirt Ironing</text>
+</svg>

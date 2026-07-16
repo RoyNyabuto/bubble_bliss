@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Small narrow basket">
+  <rect width="320" height="220" fill="#0b1220"/>
+  <ellipse cx="160" cy="66" rx="76" ry="22" fill="#7b5b3e"/>
+  <rect x="84" y="66" width="152" height="88" rx="8" fill="#9f7a56"/>
+  <ellipse cx="160" cy="154" rx="76" ry="22" fill="#6f5037"/>
+  <path d="M112 66v88M136 66v88M160 66v88M184 66v88M208 66v88" stroke="#c7a47f" stroke-width="5"/>
+  <text x="160" y="204" fill="#e5e7eb" font-size="16" text-anchor="middle" font-family="Arial, sans-serif">Small Basket</text>
+</svg>

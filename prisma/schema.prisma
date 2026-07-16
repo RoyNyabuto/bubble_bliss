@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  DRIVER
+  EMPLOYEE
+  ADMIN
+}
+
+enum OrderStatus {
+  ORDER_RECEIVED
+  PICKUP_SCHEDULED
+  DRIVER_ASSIGNED
+  LAUNDRY_COLLECTED
+  CLEANING
+  DRYING
+  IRONING
+  PACKAGING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  MPESA
+  CARD
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum MachineStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String?
+  role          Role      @default(CUSTOMER)
+  image         String?
+  loyaltyPoints Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]        @relation("CustomerOrders")
+  driverOrders  Order[]        @relation("DriverOrders")
+  employeeJobs  OrderItem[]    @relation("EmployeeJobs")
+  reviews       Review[]
+  notifications Notification[]
+  messages      Message[]
+  subscriptions Subscription[]
+  referredBy    String?
+}
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  label     String
+  line1     String
+  city      String
+  lat       Float?
+  lng       Float?
+  isDefault Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  description String?
+  basePrice   Decimal  @db.Decimal(10, 2)
+  unit        String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  orderItems OrderItem[]
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  orderNumber    String      @unique
+  customerId     String
+  driverId       String?
+  addressId      String?
+  status         OrderStatus @default(ORDER_RECEIVED)
+  pickupTime     DateTime?
+  deliveryTime   DateTime?
+  notes          String?
+  photoUrls      String[]
+  qrCode         String?
+  subtotal       Decimal     @db.Decimal(10, 2)
+  discount       Decimal     @default(0) @db.Decimal(10, 2)
+  total          Decimal     @db.Decimal(10, 2)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  customer     User          @relation("CustomerOrders", fields: [customerId], references: [id])
+  driver       User?         @relation("DriverOrders", fields: [driverId], references: [id])
+  address      Address?      @relation(fields: [addressId], references: [id])
+  items        OrderItem[]
+  payment      Payment?
+  review       Review?
+  trackingLogs DeliveryTracking[]
+  couponId     String?
+  coupon       Coupon?       @relation(fields: [couponId], references: [id])
+}
+
+model OrderItem {
+  id         String  @id @default(cuid())
+  orderId    String
+  serviceId  String
+  employeeId String?
+  quantity   Int     @default(1)
+  price      Decimal @db.Decimal(10, 2)
+
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  service  Service @relation(fields: [serviceId], references: [id])
+  employee User?   @relation("EmployeeJobs", fields: [employeeId], references: [id])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  orderId       String        @unique
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  amount        Decimal       @db.Decimal(10, 2)
+  mpesaReceipt  String?
+  stripeIntent  String?
+  createdAt     DateTime      @default(now())
+
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  paymentId String
+  type      String
+  amount    Decimal  @db.Decimal(10, 2)
+  reference String?
+  createdAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model Coupon {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  percentOff Int?
+  amountOff  Decimal? @db.Decimal(10, 2)
+  active     Boolean  @default(true)
+  expiresAt  DateTime?
+
+  orders Order[]
+}
+
+model Employee {
+  id       String @id @default(cuid())
+  userId   String @unique
+  station  String
+
+  machines Machine[]
+}
+
+model Machine {
+  id         String        @id @default(cuid())
+  label      String
+  type       String
+  status     MachineStatus @default(AVAILABLE)
+  employeeId String?
+
+  employee Employee? @relation(fields: [employeeId], references: [id])
+}
+
+model DeliveryTracking {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  lat       Float?
+  lng       Float?
+  note      String?
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  userId    String
+  sender    String
+  body      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  plan      String
+  active    Boolean  @default(true)
+  startedAt DateTime @default(now())
+  renewsAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="Duvet 4x6 / 3x6">
+  <rect width="320" height="220" fill="#1f2937"/>
+  <rect x="48" y="50" width="224" height="120" rx="14" fill="#94d3ff"/>
+  <rect x="60" y="62" width="200" height="96" rx="12" fill="#d5efff"/>
+  <path d="M76 80h168M76 100h168M76 120h168M76 140h168" stroke="#a4d7ff" stroke-width="4"/>
+  <text x="160" y="200" fill="#f8fafc" font-size="16" text-anchor="middle" font-family="Arial, sans-serif">Duvet 4x6 / 3x6</text>
+</svg>

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 type RoleFilter = "CUSTOMER" | "DRIVER" | "EMPLOYEE" | "ADMIN";
 type EventType = "PAYMENT" | "PICKUP" | "DELIVERY" | "ORDER" | "REFUND" | "GENERAL";
-type NotificationCountArgs = NonNullable<Parameters<typeof prisma.notification.count>[0]>;
-type NotificationWhere = NotificationCountArgs["where"];
+type NotificationWhere = Prisma.NotificationWhereInput;
 
 function classifyEventType(title: string, body: string): EventType {
   const text = `${title} ${body}`.toLowerCase();

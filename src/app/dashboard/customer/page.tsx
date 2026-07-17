@@ -36,7 +36,26 @@ export default async function CustomerDashboard() {
     }
   });
 
-  const serializedOrders = orders.map((order) => ({
+  type CustomerOrderItem = {
+    id: string;
+    orderNumber: string;
+    status: string;
+    total: number | string;
+    pickupTime: Date | null;
+    review: {
+      id: string;
+      rating: number;
+      comment: string | null;
+    } | null;
+    payment: {
+      id: string;
+      status: string;
+      method: string;
+      amount: number | string;
+    } | null;
+  };
+
+  const serializedOrders = (orders as CustomerOrderItem[]).map((order) => ({
     id: order.id,
     orderNumber: order.orderNumber,
     status: order.status,

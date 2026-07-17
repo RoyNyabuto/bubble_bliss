@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
   const startDate = parseDate(searchParams.get("startDate"));
   const endDate = parseDate(searchParams.get("endDate"));
 
-  const where = {
+  const where: NotificationWhere = {
     ...(typeof read === "boolean" ? { read } : {}),
     ...(role && role !== "all" ? { user: { role } } : {}),
     ...(startDate || endDate
@@ -130,7 +130,6 @@ export async function GET(req: NextRequest) {
       }
     },
     orderBy: { createdAt: "desc" },
-  } as unknown as NotificationWhere;
     take: pageSize
   });
 
